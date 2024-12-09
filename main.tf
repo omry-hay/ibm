@@ -67,5 +67,5 @@ resource "ibm_cos_bucket_object" "file" {
 }
 
 output "website-link" {
-  value = ibm_cos_bucket.standard-ams03.s3_endpoint_public
+  value = ibm_cos_bucket.standard-ams03.website_endpoint
 }
