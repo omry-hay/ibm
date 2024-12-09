@@ -44,6 +44,7 @@ resource "ibm_iam_access_group_policy" "policy" {
 } 
 
 resource ibm_cos_bucket_website_configuration "website" {
+  depends_on = [ibm_cos_bucket.standard-ams03, ibm_iam_access_group_policy.policy] 
   bucket_crn = ibm_cos_bucket.standard-ams03.crn
   bucket_location = ibm_cos_bucket.standard-ams03.single_site_location
   website_configuration {
@@ -57,6 +58,7 @@ resource ibm_cos_bucket_website_configuration "website" {
 }
 
 resource "ibm_cos_bucket_object" "file" {
+  depends_on      = [ibm_cos_bucket.standard-ams03, ibm_cos_bucket_website_configuration.website] 
   bucket_crn      = ibm_cos_bucket.standard-ams03.crn
   bucket_location = ibm_cos_bucket.standard-ams03.single_site_location
   content_file    = "${path.module}/index.html"
