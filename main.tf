@@ -11,3 +11,59 @@ terraform {
 provider "ibm" {
   region = "us-south"
 }
+
+data "ibm_iam_access_group" "public_access_group" {
+  access_group_name = "Public Access"
+}
+
+resource "ibm_resource_instance" "cos_instance" {
+  name              = "cos-instance"
+  service           = "cloud-object-storage"
+  plan              = "standard"
+  location          = "global"
+}
+
+resource "ibm_cos_bucket" "standard-ams03" {
+  bucket_name          = "a-standard-bucket-at-ams-env0-test"
+  resource_instance_id = ibm_resource_instance.cos_instance.id
+  single_site_location = "ams03"
+  storage_class        = "standard"
+}
+
+resource "ibm_iam_access_group_policy" "policy" { 
+  depends_on = [ibm_cos_bucket.standard-ams03] 
+  access_group_id = data.ibm_iam_access_group.public_access_group.groups[0].id 
+  roles = ["Object Reader"] 
+
+  resources { 
+    service = "cloud-object-storage" 
+    resource_type = "bucket" 
+    resource_instance_id = "COS instance guid"  # eg : 94xxxxxx-3xxx-4xxx-8xxx-7xxxxxxxxx7
+    resource = ibm_cos_bucket.standard-ams03.bucket_name
+  } 
+} 
+
+resource ibm_cos_bucket_website_configuration "website" {
+  bucket_crn = ibm_cos_bucket.standard-ams03.crn
+  bucket_location = ibm_cos_bucket.standard-ams03.single_site_location
+  website_configuration {
+    error_document{
+      key = "error.html"
+    }
+    index_document{
+      suffix = "index.html"
+    }
+  }
+}
+
+resource "ibm_cos_bucket_object" "file" {
+  bucket_crn      = ibm_cos_bucket.standard-ams03.crn
+  bucket_location = ibm_cos_bucket.standard-ams03.single_site_location
+  content_file    = "${path.module}/index.html"
+  key             = "index.html"
+  etag            = filemd5("${path.module}/index.html")
+}
+
+output "website-link" {
+  value = ibm_cos_bucket.standard-ams03.s3_endpoint_public
+}
