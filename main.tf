@@ -12,6 +12,10 @@ provider "ibm" {
   region = "us-south"
 }
 
+locals {
+  bucket_name = "a-standard-bucket-at-ams-env0-test"
+}
+
 data "ibm_iam_access_group" "public_access_group" {
   access_group_name = "Public Access"
 }
@@ -24,7 +28,7 @@ resource "ibm_resource_instance" "cos_instance" {
 }
 
 resource "ibm_cos_bucket" "standard-ams03" {
-  bucket_name          = "a-standard-bucket-at-ams-env0-test"
+  bucket_name          = local.bucket_name
   resource_instance_id = ibm_resource_instance.cos_instance.id
   single_site_location = "ams03"
   storage_class        = "standard"
@@ -66,6 +70,12 @@ resource "ibm_cos_bucket_object" "file" {
   etag            = filemd5("${path.module}/index.html")
 }
 
+data "ibm_cos_bucket" "bucket_data" {
+  depends_on           = [ibm_cos_bucket_object.file] 
+  bucket_name          = local.bucket_name
+  resource_instance_id = ibm_resource_instance.cos_instance.id
+}
+
 output "website-link" {
-  value = ibm_cos_bucket.standard-ams03.website_endpoint
+  value = ibm_cos_bucket.bucket_data.website_endpoint
 }
