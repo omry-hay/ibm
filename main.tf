@@ -74,6 +74,7 @@ data "ibm_cos_bucket" "bucket_data" {
   depends_on           = [ibm_cos_bucket_object.file] 
   bucket_name          = local.bucket_name
   resource_instance_id = ibm_resource_instance.cos_instance.id
+  bucket_region        = ibm_cos_bucket.standard-ams03.region_location
 }
 
 output "website-link" {
