@@ -70,14 +70,6 @@ resource "ibm_cos_bucket_object" "file" {
   etag            = filemd5("${path.module}/index.html")
 }
 
-data "ibm_cos_bucket" "bucket_data" {
-  depends_on           = [ibm_cos_bucket_object.file] 
-  bucket_name          = local.bucket_name
-  resource_instance_id = ibm_resource_instance.cos_instance.id
-  bucket_region        = ibm_cos_bucket.standard-ams03.region_location
-  bucket_type          = ibm_cos_bucket.standard-ams03.single_site_location
-}
-
 output "website-link" {
-  value = data.ibm_cos_bucket.bucket_data.website_endpoint
+  value = "https://a-standard-bucket-at-ams-env0-test.s3.ams03.cloud-object-storage.appdomain.cloud/index.html"
 }
