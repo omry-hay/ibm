@@ -13,7 +13,7 @@ provider "ibm" {
 }
 
 locals {
-  bucket_name = "a-standard-bucket-at-ams-env0-test"
+  bucket_name = "a-standard-bucket-at-ams-env0-test-1"
 }
 
 data "ibm_iam_access_group" "public_access_group" {
